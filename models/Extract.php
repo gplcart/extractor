@@ -44,7 +44,8 @@ class Extract extends Model
     {
         $patterns = array(
             'twig' => '/text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s',
-            'php' => '/->text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s'
+            'php' => '/->text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s',
+            'js' => '/GplCart.text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s',
         );
 
         if (isset($ext)) {
@@ -72,7 +73,7 @@ class Extract extends Model
         if (!is_resource($handle)) {
             return array();
         }
-        
+
         $lines = self::MAX_LINES;
 
         $extracted = array();
