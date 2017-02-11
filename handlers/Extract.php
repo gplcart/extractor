@@ -10,12 +10,11 @@
 namespace gplcart\modules\extractor\handlers;
 
 use gplcart\modules\extractor\models\Extract as ExtractorExtractModel;
-use gplcart\core\handlers\job\export\Base as BaseHandler;
 
 /**
  * String extractor handler
  */
-class Extract extends BaseHandler
+class Extract
 {
 
     /**
@@ -30,8 +29,6 @@ class Extract extends BaseHandler
      */
     public function __construct(ExtractorExtractModel $extract)
     {
-        parent::__construct();
-
         $this->extract = $extract;
     }
 
@@ -55,15 +52,36 @@ class Extract extends BaseHandler
         }
 
         foreach ($files as $file) {
-            $extracted = $this->extract->extractFromFile($file);
-            foreach ($extracted as $string) {
-                gplcart_file_csv($job['data']['file'], array($string, ''));
+            foreach ($this->extract->extractFromFile($file) as $string) {
+                if (!$this->exists($string, $job)) {
+                    $job['inserted'] ++;
+                    gplcart_file_csv($job['data']['file'], array($string, ''));
+                }
             }
-            $job['inserted'] += count($extracted);
         }
 
         $job['context']['offset'] += count($files);
         $job['done'] = $job['context']['offset'];
+    }
+
+    /**
+     * Check if the string already exists in the file
+     * @param string $string
+     * @param array $job
+     * @return boolean
+     */
+    protected function exists($string, array $job)
+    {
+        $handle = fopen($job['data']['file'], 'r');
+
+        while (($data = fgetcsv($handle, 1000)) !== false) {
+            if ($data[0] === $string) {
+                return true;
+            }
+        }
+
+        fclose($handle);
+        return false;
     }
 
 }
