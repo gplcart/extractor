@@ -23,7 +23,7 @@ class Extractor
     {
         return array(
             'name' => 'Extractor',
-            'version' => '1.0.0-alfa.1',
+            'version' => '1.0.0-alfa.4',
             'description' => 'Allows to scan source files and extract translatable strings',
             'author' => 'Iurii Makukh',
             'core' => '1.x'
@@ -31,10 +31,10 @@ class Extractor
     }
 
     /**
-     * Implements hook "routes"
+     * Implements hook "route.list"
      * @param array $routes
      */
-    public function hookRoute(array &$routes)
+    public function hookRouteList(array &$routes)
     {
         $routes['admin/tool/extract'] = array(
             'menu' => array('admin' => 'Extractor'),
