@@ -76,6 +76,7 @@ class Extract
 
         while (($data = fgetcsv($handle, 1000)) !== false) {
             if ($data[0] === $string) {
+                fclose($handle);
                 return true;
             }
         }
