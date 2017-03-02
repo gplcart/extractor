@@ -51,9 +51,7 @@ class Extract extends BackendController
         $this->setBreadcrumbEditExtract();
 
         $this->submitExtract();
-        $job = $this->getCurrentJob();
-
-        $this->setData('job', $this->renderJob($job));
+        $this->setJob();
         $this->outputEditExtract();
     }
 
