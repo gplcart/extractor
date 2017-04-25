@@ -94,6 +94,7 @@ class Extract extends Model
      */
     public function extractFromString($string, $pattern)
     {
+        $matches = array();
         preg_match_all($pattern, $string, $matches);
 
         if (empty($matches[2])) {
@@ -130,7 +131,7 @@ class Extract extends Model
     {
         $scanned = array();
         foreach ((array) $options['directory'] as $directory) {
-            $scanned = array_merge($scanned, gplcart_file_scan_recursive("$directory/*"));
+            $scanned = array_merge($scanned, gplcart_file_scan_recursive($directory));
         }
 
         $files = array_filter($scanned, function($file) {

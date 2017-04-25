@@ -139,7 +139,7 @@ class Extract extends BackendController
      */
     protected function getFileExtract()
     {
-        $file = gplcart_file_unique(GC_PRIVATE_DOWNLOAD_DIR . '/extracted.csv');
+        $file = gplcart_file_unique(GC_PRIVATE_DOWNLOAD_DIR . '/extracted-translations/extracted.csv');
         file_put_contents($file, '');
         return $file;
     }

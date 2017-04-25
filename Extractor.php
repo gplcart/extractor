@@ -9,25 +9,20 @@
 
 namespace gplcart\modules\extractor;
 
+use gplcart\core\Module;
+
 /**
  * Main class for Extractor module
  */
-class Extractor
+class Extractor extends Module
 {
 
     /**
-     * Module info
-     * @return array
+     * Constructor
      */
-    public function info()
+    public function __construct()
     {
-        return array(
-            'name' => 'Extractor',
-            'version' => '1.0.0-alfa.4',
-            'description' => 'Allows to scan source files and extract translatable strings',
-            'author' => 'Iurii Makukh',
-            'core' => '1.x'
-        );
+        parent::__construct();
     }
 
     /**
@@ -55,6 +50,19 @@ class Extractor
                 'process' => array('gplcart\\modules\\extractor\\handlers\\Extract', 'process')
             ),
         );
+    }
+
+    /**
+     * Implements hook "cron"
+     */
+    public function hookCron()
+    {
+        // Automatically delete created files older than 1 day
+        $lifespan = 86400;
+        $directory = GC_PRIVATE_DOWNLOAD_DIR . '/extracted-translations';
+        if (is_dir($directory)) {
+            gplcart_file_delete($directory, array('csv'), $lifespan);
+        }
     }
 
 }

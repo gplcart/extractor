@@ -1,0 +1,7 @@
+{
+    "name": "Extractor",
+    "version": "1.0.0-alfa.4",
+    "description": "Allows to scan source files and extract translatable strings",
+    "author": "Iurii Makukh",
+    "core": "1.x"
+}
