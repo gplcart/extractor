@@ -65,7 +65,7 @@ class Extract extends BackendController
         if ($download) {
             $file = base64_decode(urldecode($download));
             if (file_exists($file)) {
-                $this->response->download($file);
+                $this->download($file);
             }
         }
     }
