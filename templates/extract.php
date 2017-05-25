@@ -6,18 +6,12 @@
  * @license https://www.gnu.org/licenses/gpl.html GNU/GPLv3
  */
 ?>
-<form method="post" class="form-horizontal">
-  <input type="hidden" name="token" value="<?php echo $this->prop('token'); ?>">
+<form method="post">
+  <input type="hidden" name="token" value="<?php echo $_token; ?>">
   <div class="panel panel-default">
     <div class="panel-body">
-      <div class="form-group">
-        <div class="col-md-11 col-md-offset-1">
-          <button class="btn btn-default" name="extract" value="1"><?php echo $this->text('Extract'); ?></button>
-        </div>
-      </div>
+      <button class="btn btn-default" name="extract" value="1"><?php echo $this->text('Extract'); ?></button>
     </div>
   </div>
 </form>
-<?php if (!empty($job)) { ?>
-<?php echo $job; ?>
-<?php } ?>
+<?php echo $_job; ?>

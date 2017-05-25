@@ -32,7 +32,7 @@ class Extractor extends Module
     public function hookRouteList(array &$routes)
     {
         $routes['admin/tool/extract'] = array(
-            'menu' => array('admin' => 'Extractor'),
+            'menu' => array('admin' => 'Extract strings'),
             'handlers' => array(
                 'controller' => array('gplcart\\modules\\extractor\\controllers\\Extract', 'editExtract')
             )

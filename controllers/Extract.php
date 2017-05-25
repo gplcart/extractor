@@ -51,7 +51,6 @@ class Extract extends BackendController
         $this->setBreadcrumbEditExtract();
 
         $this->submitExtract();
-        $this->setJob();
         $this->outputEditExtract();
     }
 
@@ -63,7 +62,7 @@ class Extract extends BackendController
         $download = $this->request->get('download');
 
         if ($download) {
-            $file = base64_decode(urldecode($download));
+            $file = gplcart_string_decode($download);
             if (file_exists($file)) {
                 $this->download($file);
             }
@@ -99,8 +98,22 @@ class Extract extends BackendController
     protected function submitExtract()
     {
         if ($this->isPosted('extract')) {
-            $this->setJobExtract();
+            $file = $this->getFileExtract();
+            if (empty($file)) {
+                $this->redirect('', $this->text('Failed to create file'), 'warning');
+            }
+            $this->setJobExtract($file);
         }
+    }
+
+    /**
+     * Creates a CSV file to write extracted string to and returns its path
+     * @return string
+     */
+    protected function getFileExtract()
+    {
+        $file = gplcart_file_unique(GC_PRIVATE_TEMP_DIR . '/extracted-translations.csv');
+        return file_put_contents($file, '') === false ? '' : $file;
     }
 
     /**
@@ -134,25 +147,12 @@ class Extract extends BackendController
     }
 
     /**
-     * Creates a CSV file to write extracted string to and returns its path
-     * @return string
-     */
-    protected function getFileExtract()
-    {
-        $file = gplcart_file_unique(GC_PRIVATE_DOWNLOAD_DIR . '/extracted-translations/extracted.csv');
-        file_put_contents($file, '');
-        return $file;
-    }
-
-    /**
      * Sets and performs string extraction job
+     * @param string $file
      */
-    protected function setJobExtract()
+    protected function setJobExtract($file)
     {
-        $file = $this->getFileExtract();
-        $total = $this->getTotalExtract();
-
-        $vars = array('@href' => $this->url('', array('download' => urlencode(base64_encode($file)))));
+        $vars = array('@href' => $this->url('', array('download' => gplcart_string_encode($file))));
         $finish = $this->text('Extracted %inserted strings from %total files. <a href="@href">Download</a>', $vars);
 
         $job = array(
@@ -162,7 +162,7 @@ class Extract extends BackendController
                 'limit' => self::SCAN_LIMIT,
                 'directory' => $this->getScanDirectoriesExtract()
             ),
-            'total' => $total,
+            'total' => $this->getTotalExtract(),
             'redirect_message' => array('finish' => $finish)
         );
 
