@@ -59,9 +59,9 @@ class Extract extends BackendController
      */
     protected function downloadExtract()
     {
-        $download = $this->request->get('download');
+        $download = $this->getQuery('download', '', 'string');
 
-        if ($download) {
+        if (!empty($download)) {
             $file = gplcart_string_decode($download);
             if (file_exists($file)) {
                 $this->download($file);
