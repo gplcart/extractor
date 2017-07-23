@@ -8,10 +8,6 @@
 ?>
 <form method="post">
   <input type="hidden" name="token" value="<?php echo $_token; ?>">
-  <div class="panel panel-default">
-    <div class="panel-body">
-      <button class="btn btn-default" name="extract" value="1"><?php echo $this->text('Extract'); ?></button>
-    </div>
-  </div>
+  <button class="btn btn-default" name="extract" value="1"><?php echo $this->text('Extract'); ?></button>
 </form>
 <?php echo $_job; ?>

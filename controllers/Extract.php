@@ -19,18 +19,12 @@ class Extract extends BackendController
 {
 
     /**
-     * Max files to parse for one job iteration
-     */
-    const SCAN_LIMIT = 10;
-
-    /**
      * Extractor's model instance
      * @var \gplcart\modules\extractor\models\Extract $extract
      */
     protected $extract;
 
     /**
-     * Constructor
      * @param ExtractorExtractModel $extract
      */
     public function __construct(ExtractorExtractModel $extract)
@@ -82,14 +76,7 @@ class Extract extends BackendController
      */
     protected function setBreadcrumbEditExtract()
     {
-        $breadcrumbs = array();
-
-        $breadcrumbs[] = array(
-            'text' => $this->text('Dashboard'),
-            'url' => $this->url('admin')
-        );
-
-        $this->setBreadcrumbs($breadcrumbs);
+        $this->setBreadcrumbBackend();
     }
 
     /**
@@ -99,9 +86,11 @@ class Extract extends BackendController
     {
         if ($this->isPosted('extract')) {
             $file = $this->getFileExtract();
+
             if (empty($file)) {
                 $this->redirect('', $this->text('Failed to create file'), 'warning');
             }
+
             $this->setJobExtract($file);
         }
     }
@@ -134,6 +123,7 @@ class Extract extends BackendController
             'count' => true,
             'directory' => $this->getScanDirectoriesExtract()
         );
+
         return (int) $this->extract->scan($options);
     }
 
@@ -143,7 +133,7 @@ class Extract extends BackendController
      */
     protected function getScanDirectoriesExtract()
     {
-        return array(GC_CORE_DIR, GC_MODULE_DIR);
+        return array(GC_CORE_DIR, GC_MODULE_DIR . '/frontend', GC_MODULE_DIR . '/backend');
     }
 
     /**
@@ -152,6 +142,8 @@ class Extract extends BackendController
      */
     protected function setJobExtract($file)
     {
+        $limit = 10;
+
         $vars = array('@href' => $this->url('', array('download' => gplcart_string_encode($file))));
         $finish = $this->text('Extracted %inserted strings from %total files. <a href="@href">Download</a>', $vars);
 
@@ -159,7 +151,7 @@ class Extract extends BackendController
             'id' => 'extract',
             'data' => array(
                 'file' => $file,
-                'limit' => self::SCAN_LIMIT,
+                'limit' => $limit,
                 'directory' => $this->getScanDirectoriesExtract()
             ),
             'total' => $this->getTotalExtract(),
