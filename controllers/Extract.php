@@ -76,7 +76,7 @@ class Extract extends BackendController
      */
     protected function setBreadcrumbEditExtract()
     {
-        $this->setBreadcrumbBackend();
+        $this->setBreadcrumbHome();
     }
 
     /**
