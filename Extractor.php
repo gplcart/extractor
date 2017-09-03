@@ -58,7 +58,7 @@ class Extractor extends Module
     public function hookCron()
     {
         // Automatically delete created files older than 1 day
-        $lifespan = 86400;
+        $lifespan = 24*60*60;
         $directory = GC_PRIVATE_DOWNLOAD_DIR . '/extracted-translations';
         if (is_dir($directory)) {
             gplcart_file_delete($directory, array('csv'), $lifespan);
