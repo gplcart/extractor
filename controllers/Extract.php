@@ -141,8 +141,8 @@ class Extract extends BackendController
     {
         $limit = 10;
 
-        $vars = array('@href' => $this->url('', array('download' => gplcart_string_encode($file))));
-        $finish = $this->text('Extracted %inserted strings from %total files. <a href="@href">Download</a>', $vars);
+        $vars = array('@url' => $this->url('', array('download' => gplcart_string_encode($file))));
+        $finish = $this->text('Extracted %inserted strings from %total files. <a href="@url">Download</a>', $vars);
 
         $job = array(
             'id' => 'extract',

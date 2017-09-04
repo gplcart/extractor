@@ -36,20 +36,21 @@ class Extract extends Model
     }
 
     /**
-     * Returns a pattern by a file extension
-     * or an array of pattern keyed by extension
+     * Returns a pattern by a file extension or an array of pattern keyed by extension
+     * @param null|string $extension
      * @return array|string
      */
-    public function getPattern($ext = null)
+    public function getPattern($extension = null)
     {
         $patterns = array(
             'twig' => '/text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s',
             'php' => '/->text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s',
-            'js' => '/GplCart.text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s',
+            'js' => '/GplCart.text\s*\(\s*([\'"]
+            )(.+?)\1\s*([\),])/s',
         );
 
-        if (isset($ext)) {
-            return empty($patterns[$ext]) ? '' : $patterns[$ext];
+        if (isset($extension)) {
+            return empty($patterns[$extension]) ? '' : $patterns[$extension];
         }
 
         return $patterns;

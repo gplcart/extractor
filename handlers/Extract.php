@@ -35,6 +35,7 @@ class Extract
     /**
      * Processes one extration job iteration
      * @param array $job
+     * @return array
      */
     public function process(array &$job)
     {
@@ -48,13 +49,13 @@ class Extract
         if (empty($files)) {
             $job['status'] = false;
             $job['done'] = $job['total'];
-            return null;
+            return $job;
         }
 
         foreach ($files as $file) {
             foreach ($this->extract->extractFromFile($file) as $string) {
                 if (!$this->exists($string, $job)) {
-                    $job['inserted'] ++;
+                    $job['inserted']++;
                     gplcart_file_csv($job['data']['file'], array($string, ''));
                 }
             }
@@ -62,6 +63,7 @@ class Extract
 
         $job['context']['offset'] += count($files);
         $job['done'] = $job['context']['offset'];
+        return $job;
     }
 
     /**
