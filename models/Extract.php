@@ -28,6 +28,19 @@ class Extract extends Model
     const MAX_LINES = 5000;
 
     /**
+     * An array of REGEXP patterns keyed by file extension
+     * @var array
+     */
+    protected $patterns = array(
+        'twig' => '/text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s', // {{ text('Text to translate') }}
+        'js' => '/GplCart.text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s', // GplCart.text('Text to translate');
+        'php' => array(
+            '/->text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s', // $this->language->text('Text to translate');
+            '/\/\*(?:\*|\s)+@text(?:\*|\s)+\*\/\s*([\'"])(.+?)\1\s*/', // /* @text */ 'Text to translate'
+        )
+    );
+
+    /**
      * Constructor
      */
     public function __construct()
@@ -42,18 +55,20 @@ class Extract extends Model
      */
     public function getPattern($extension = null)
     {
-        $patterns = array(
-            'twig' => '/text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s',
-            'php' => '/->text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s',
-            'js' => '/GplCart.text\s*\(\s*([\'"]
-            )(.+?)\1\s*([\),])/s',
-        );
+        $pattern = &gplcart_static(__METHOD__ . "$extension");
 
-        if (isset($extension)) {
-            return empty($patterns[$extension]) ? '' : $patterns[$extension];
+        if (isset($pattern)) {
+            return $pattern;
         }
 
-        return $patterns;
+        if (isset($extension)) {
+            $pattern = empty($this->patterns[$extension]) ? '' : $this->patterns[$extension];
+        } else {
+            $pattern = $this->patterns;
+        }
+
+        $this->hook->attach('module.extractor.pattern', $pattern, $extension, $this);
+        return $pattern;
     }
 
     /**
@@ -90,18 +105,27 @@ class Extract extends Model
     /**
      * Returns an array of extracted strings from a source string
      * @param string $string
-     * @param string $pattern
+     * @param string|array $patterns
      * @return array
      */
-    public function extractFromString($string, $pattern)
+    public function extractFromString($string, $patterns)
     {
-        $matches = array();
-        preg_match_all($pattern, $string, $matches);
+        $result = null;
+        $this->hook->attach('module.extractor.extract', $string, $patterns, $result, $this);
 
-        if (empty($matches[2])) {
-            return array();
+        if (isset($result)) {
+            return $result;
         }
-        return $this->clean($matches[2]);
+
+        foreach ((array) $patterns as $pattern) {
+            $matches = array();
+            preg_match_all($pattern, $string, $matches);
+            if (!empty($matches[2])) {
+                return $this->clean($matches[2]);
+            }
+        }
+
+        return array();
     }
 
     /**
@@ -130,13 +154,20 @@ class Extract extends Model
      */
     public function scan(array $options)
     {
+        $result = null;
+        $this->hook->attach('module.extractor.scan', $options, $result, $this);
+
+        if (isset($result)) {
+            return $result;
+        }
+
         $scanned = array();
         foreach ((array) $options['directory'] as $directory) {
-            $scanned = array_merge($scanned, gplcart_file_scan_recursive($directory));
+            $scanned = array_merge($scanned, $this->scanRecursive($directory));
         }
 
         $files = array_filter($scanned, function($file) {
-            return is_file($file) && in_array(pathinfo($file, PATHINFO_EXTENSION), array_keys($this->getPattern()));
+            return $this->isSupportedFile($file);
         });
 
         if (!empty($options['count'])) {
@@ -145,6 +176,58 @@ class Extract extends Model
 
         sort($files);
         return $files;
+    }
+
+    /**
+     * Whether the file can be parsed
+     * @param string $file
+     * @return bool
+     */
+    public function isSupportedFile($file)
+    {
+        return is_file($file) && in_array(pathinfo($file, PATHINFO_EXTENSION), array_keys($this->getPattern()));
+    }
+
+    /**
+     * Returns an array of directories to be scanned
+     * @return array
+     */
+    public function getScannedDirectories()
+    {
+        $directories = array(
+            GC_CORE_DIR,
+            GC_CONFIG_DEFAULT_DIR,
+            $this->config->getModuleDirectory('frontend'),
+            $this->config->getModuleDirectory('backend')
+        );
+
+        $this->hook->attach('module.extractor.directories', $directories, $this);
+        return $directories;
+    }
+
+    /**
+     * Recursive scans files in a directory
+     * @param string $directory
+     * @param array $results
+     * @return array
+     */
+    protected function scanRecursive($directory, &$results = array())
+    {
+        if (strpos($directory, 'override') !== false) {
+            return $results; // Exclude "override" directories
+        }
+
+        foreach (scandir($directory) as $file) {
+            $path = "$directory/$file";
+            if (!is_dir($path)) {
+                $results[] = $path;
+            } else if ($file != "." && $file != "..") {
+                $this->scanRecursive($path, $results);
+                $results[] = $path;
+            }
+        }
+
+        return $results;
     }
 
 }

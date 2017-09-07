@@ -44,8 +44,25 @@ class Extract extends BackendController
         $this->setTitleEditExtract();
         $this->setBreadcrumbEditExtract();
 
+        $this->setData('patterns', $this->extract->getPattern());
+        $this->setData('directories', $this->getRelativeDirectories());
+
         $this->submitExtract();
         $this->outputEditExtract();
+    }
+
+    /**
+     * Returns an array of relative directories to scan
+     * @return array
+     */
+    protected function getRelativeDirectories()
+    {
+        $directories = array();
+        foreach ($this->extract->getScannedDirectories() as $directory) {
+            $directories[] = gplcart_relative_path($directory);
+        }
+
+        return $directories;
     }
 
     /**
@@ -65,7 +82,7 @@ class Extract extends BackendController
      */
     protected function setTitleEditExtract()
     {
-        $this->setTitle($this->text('Extract'));
+        $this->setTitle($this->text('Extractor'));
     }
 
     /**
@@ -118,19 +135,10 @@ class Extract extends BackendController
     {
         $options = array(
             'count' => true,
-            'directory' => $this->getScanDirectoriesExtract()
+            'directory' => $this->extract->getScannedDirectories()
         );
 
         return (int) $this->extract->scan($options);
-    }
-
-    /**
-     * Returns an array of directories to be scanned
-     * @return array
-     */
-    protected function getScanDirectoriesExtract()
-    {
-        return array(GC_CORE_DIR, GC_MODULE_DIR . '/frontend', GC_MODULE_DIR . '/backend');
     }
 
     /**
@@ -149,7 +157,7 @@ class Extract extends BackendController
             'data' => array(
                 'file' => $file,
                 'limit' => $limit,
-                'directory' => $this->getScanDirectoriesExtract()
+                'directory' => $this->extract->getScannedDirectories()
             ),
             'total' => $this->getTotalExtract(),
             'redirect_message' => array('finish' => $finish)
