@@ -44,25 +44,34 @@ class Extract extends BackendController
         $this->setTitleEditExtract();
         $this->setBreadcrumbEditExtract();
 
+        $this->setData('scopes', $this->getScopesExtract());
         $this->setData('patterns', $this->extract->getPattern());
-        $this->setData('directories', $this->getRelativeDirectories());
 
         $this->submitExtract();
         $this->outputEditExtract();
     }
 
     /**
-     * Returns an array of relative directories to scan
+     * Returns an array of scopes to extract from
      * @return array
      */
-    protected function getRelativeDirectories()
+    protected function getScopesExtract()
     {
-        $directories = array();
-        foreach ($this->extract->getScannedDirectories() as $directory) {
-            $directories[] = gplcart_relative_path($directory);
+        $scopes = array(
+            array(
+                'name' => $this->text('Core'),
+                'directories' => $this->extract->getScannedDirectories()
+            )
+        );
+
+        foreach ($this->config->getModules() as $module) {
+            $scopes[$module['module_id']] = array(
+                'name' => $module['name'],
+                'directories' => array($module['directory'])
+            );
         }
 
-        return $directories;
+        return $scopes;
     }
 
     /**
@@ -98,15 +107,28 @@ class Extract extends BackendController
      */
     protected function submitExtract()
     {
-        if ($this->isPosted('extract')) {
-            $file = $this->getFileExtract();
-
-            if (empty($file)) {
-                $this->redirect('', $this->text('Failed to create file'), 'warning');
-            }
-
-            $this->setJobExtract($file);
+        if ($this->isPosted('extract') && $this->validateExtract()) {
+            $this->setJobExtract();
         }
+    }
+
+    /**
+     * Validates submitted data
+     */
+    protected function validateExtract()
+    {
+        $this->setSubmitted('settings');
+        $scope = $this->getSubmitted('scope');
+        $scopes = $this->getScopesExtract();
+
+        if (empty($scopes[$scope]['directories'])) {
+            $this->setError('scope', $this->text('@field has invalid value', array('@field' => $this->text('Scope'))));
+        } else {
+            $this->setSubmitted('directories', $scopes[$scope]['directories']);
+            $this->setSubmitted('file', $this->getFileExtract());
+        }
+
+        return !$this->hasErrors();
     }
 
     /**
@@ -116,7 +138,8 @@ class Extract extends BackendController
     protected function getFileExtract()
     {
         $file = gplcart_file_unique(GC_PRIVATE_TEMP_DIR . '/extracted-translations.csv');
-        return file_put_contents($file, '') === false ? '' : $file;
+        file_put_contents($file, '');
+        return $file;
     }
 
     /**
@@ -129,13 +152,14 @@ class Extract extends BackendController
 
     /**
      * Returns a total number of files to scan
+     * @param array $directories
      * @return integer
      */
-    protected function getTotalExtract()
+    protected function getTotalExtract(array $directories)
     {
         $options = array(
             'count' => true,
-            'directory' => $this->extract->getScannedDirectories()
+            'directory' => $directories
         );
 
         return (int) $this->extract->scan($options);
@@ -143,11 +167,13 @@ class Extract extends BackendController
 
     /**
      * Sets and performs string extraction job
-     * @param string $file
      */
-    protected function setJobExtract($file)
+    protected function setJobExtract()
     {
         $limit = 10;
+        $file = $this->getSubmitted('file');
+        $directories = $this->getSubmitted('directories');
+        $total = $this->getTotalExtract($directories);
 
         $vars = array('@url' => $this->url('', array('download' => gplcart_string_encode($file))));
         $finish = $this->text('Extracted %inserted strings from %total files. <a href="@url">Download</a>', $vars);
@@ -157,9 +183,9 @@ class Extract extends BackendController
             'data' => array(
                 'file' => $file,
                 'limit' => $limit,
-                'directory' => $this->extract->getScannedDirectories()
+                'directory' => $directories
             ),
-            'total' => $this->getTotalExtract(),
+            'total' => $total,
             'redirect_message' => array('finish' => $finish)
         );
 

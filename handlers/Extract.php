@@ -24,7 +24,6 @@ class Extract
     protected $extract;
 
     /**
-     * Constructor
      * @param ExtractorExtractModel $extract
      */
     public function __construct(ExtractorExtractModel $extract)
@@ -33,7 +32,7 @@ class Extract
     }
 
     /**
-     * Processes one extration job iteration
+     * Processes one extraction job iteration
      * @param array $job
      * @return array
      */
@@ -55,7 +54,7 @@ class Extract
         foreach ($files as $file) {
             foreach ($this->extract->extractFromFile($file) as $string) {
                 if (!$this->exists($string, $job)) {
-                    $job['inserted']++;
+                    $job['inserted'] ++;
                     gplcart_file_csv($job['data']['file'], array($string, ''));
                 }
             }
