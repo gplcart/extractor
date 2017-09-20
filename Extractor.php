@@ -32,11 +32,21 @@ class Extractor extends Module
     public function hookRouteList(array &$routes)
     {
         $routes['admin/tool/extract'] = array(
-            'menu' => array('admin' => 'Extractor'),
+            'access' => 'module_extractor_edit',
+            'menu' => array('admin' => /* @text */'Extractor'),
             'handlers' => array(
-                'controller' => array('gplcart\\modules\\extractor\\controllers\\Extract', 'editExtract')
+                'controller' => array('gplcart\\modules\\extractor\\controllers\\Extractor', 'editExtractor')
             )
         );
+    }
+
+    /**
+     * Implements hook "user.role.permissions"
+     * @param array $permissions
+     */
+    public function hookUserRolePermissions(array &$permissions)
+    {
+        $permissions['module_extractor_edit'] = /* @text */'Extractor: edit';
     }
 
     /**
@@ -47,8 +57,9 @@ class Extractor extends Module
     {
         $handlers['extract'] = array(
             'handlers' => array(
-                'process' => array('gplcart\\modules\\extractor\\handlers\\Extract', 'process')
+                'process' => array('gplcart\\modules\\extractor\\handlers\\Extractor', 'process')
             ),
         );
     }
+
 }
