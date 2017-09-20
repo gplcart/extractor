@@ -1,7 +1,7 @@
 [![Build Status](https://scrutinizer-ci.com/g/gplcart/extractor/badges/build.png?b=master)](https://scrutinizer-ci.com/g/gplcart/extractor/build-status/master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/gplcart/extractor/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/gplcart/extractor/?branch=master)
 
-**Extractor** is a module for [GPL Cart shopping cart](https://github.com/gplcart/gplcart) to extract translatable strings from various system files including templates.
+**Extractor** is a module for [GPL Cart shopping cart](https://github.com/gplcart/gplcart) to extract translatable strings from various system and module files.
 Essentially it searches for *text()* functions and extracts their arguments. Extracted strings are stored in CSV files which can be downloaded.
 
 **Installation**
