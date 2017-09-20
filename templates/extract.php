@@ -22,6 +22,16 @@
       <?php } ?>
     </select>
   </div>
+  <div class="form-group">
+    <label class="control-label"><?php echo $this->text('Check duplicates'); ?></label>
+    <select class="form-control" name="settings[check_duplicates]">
+      <option value=""><?php echo $this->text('No'); ?></option>
+      <?php foreach (array_keys($files) as $basename) { ?>
+        <option value="<?php echo $basename; ?>"<?php echo $basename == key($files) ? ' selected' : ''; ?>><?php echo $this->e($basename); ?></option>
+      <?php } ?>
+    </select>
+    <div class="help-block"><?php echo $this->text('If you selected a scope other than "Core" you might extract strings that already exist in the core translations. To exclude duplicates select a core translation file to compare with'); ?></div>
+  </div>
   <button class="btn btn-default" name="extract" value="1"><?php echo $this->text('Extract'); ?></button>
 </form>
 <?php echo $_job; ?>
