@@ -9,26 +9,36 @@
 
 namespace gplcart\modules\extractor\handlers;
 
-use gplcart\modules\extractor\models\Extract as ExtractorExtractModel;
+use gplcart\core\models\Language as LanguageModel;
+use gplcart\modules\extractor\models\Extractor as ExtractorModel;
 
 /**
  * String extractor handler
  */
-class Extract
+class Extractor
 {
 
     /**
-     * Extract model instance
-     * @var \gplcart\modules\extractor\models\Extract $extract
+     * Extractor model instance
+     * @var \gplcart\modules\extractor\models\Extractor $extractor
      */
-    protected $extract;
+    protected $extractor;
 
     /**
-     * @param ExtractorExtractModel $extract
+     * Language model class instance
+     * @var \gplcart\core\models\Language $language
      */
-    public function __construct(ExtractorExtractModel $extract)
+    protected $language;
+
+    /**
+     * @param LanguageModel $language
+     * @param ExtractorModel $extractor
+     */
+    public function __construct(LanguageModel $language,
+            ExtractorModel $extractor)
     {
-        $this->extract = $extract;
+        $this->language = $language;
+        $this->extractor = $extractor;
     }
 
     /**
@@ -42,7 +52,7 @@ class Extract
             $job['context']['offset'] = 0;
         }
 
-        $scanned = $this->extract->scan(array('directory' => $job['data']['directory']));
+        $scanned = $this->extractor->scan(array('directory' => $job['data']['directory']));
         $files = array_slice($scanned, $job['context']['offset'], $job['data']['limit']);
 
         if (empty($files)) {
@@ -52,7 +62,7 @@ class Extract
         }
 
         foreach ($files as $file) {
-            foreach ($this->extract->extractFromFile($file) as $string) {
+            foreach ($this->extractor->extractFromFile($file) as $string) {
                 if (!$this->exists($string, $job)) {
                     $job['inserted'] ++;
                     gplcart_file_csv($job['data']['file'], array($string, ''));
@@ -73,17 +83,27 @@ class Extract
      */
     protected function exists($string, array $job)
     {
-        $handle = fopen($job['data']['file'], 'r');
-
-        while (($data = fgetcsv($handle, 1000)) !== false) {
-            if ($data[0] === $string) {
-                fclose($handle);
+        // Check core translation for dublicates
+        if (!empty($job['data']['check_file'])) {
+            $translations = $this->language->loadTranslation($job['data']['check_file']);
+            if (isset($translations[$string])) {
                 return true;
             }
         }
 
+        // Check the string already written
+        $handle = fopen($job['data']['file'], 'r');
+
+        $found = false;
+        while (($data = fgetcsv($handle, 1000)) !== false) {
+            if (isset($data[0]) && $data[0] === $string) {
+                $found = true;
+                break;
+            }
+        }
+
         fclose($handle);
-        return false;
+        return $found;
     }
 
 }

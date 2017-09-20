@@ -14,31 +14,38 @@ use gplcart\core\Model;
 /**
  * Methods to extract translatable strings from various source files
  */
-class Extract extends Model
+class Extractor extends Model
 {
 
     /**
-     * Max parsing width (in columns)
+     * Max parsing width in columns
      */
     const MAX_COLS = 500;
 
     /**
-     * Max parsing depth (in rows)
+     * Max rows to parse per file
      */
     const MAX_LINES = 5000;
 
     /**
-     * An array of REGEXP patterns keyed by file extension
-     * @var array
+     * Pattern to extract strings from JS function GplCart.text()
      */
-    protected $patterns = array(
-        'twig' => '/text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s', // {{ text('Text to translate') }}
-        'js' => '/GplCart.text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s', // GplCart.text('Text to translate');
-        'php' => array(
-            '/->text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s', // $this->language->text('Text to translate');
-            '/\/\*(?:\*|\s)+@text(?:\*|\s)+\*\/\s*([\'"])(.+?)\1\s*/', // /* @text */ 'Text to translate'
-        )
-    );
+    const PATTERN_JS = '/GplCart.text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s';
+
+    /**
+     * Pattern to extract strings from TWIG function {{ text() }}
+     */
+    const PATTERN_TWIG = '/text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s';
+
+    /**
+     * Pattern to extract strings using inline @text annotation
+     */
+    const PATTERN_PHPDOC = '/\/\*(?:\*|\s)+@text(?:\*|\s)+\*\/\s*([\'"])(.+?)\1\s*/';
+
+    /**
+     * Pattern to extract strings from Language::text() method
+     */
+    const PATTERN_PHP = '/->text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s';
 
     /**
      * Constructor
@@ -49,26 +56,64 @@ class Extract extends Model
     }
 
     /**
-     * Returns a pattern by a file extension or an array of pattern keyed by extension
+     * Returns an extractor by a file extension or an array of extractors keyed by extension
      * @param null|string $extension
      * @return array|string
      */
-    public function getPattern($extension = null)
+    public function get($extension = null)
     {
-        $pattern = &gplcart_static(__METHOD__ . "$extension");
+        $extractor = &gplcart_static(__METHOD__ . "$extension");
 
-        if (isset($pattern)) {
-            return $pattern;
+        if (isset($extractor)) {
+            return $extractor;
         }
+
+        $extractors = $this->getDefault();
 
         if (isset($extension)) {
-            $pattern = empty($this->patterns[$extension]) ? '' : $this->patterns[$extension];
+            $extractor = empty($extractors[$extension]) ? '' : $extractors[$extension];
         } else {
-            $pattern = $this->patterns;
+            $extractor = $extractors;
         }
 
-        $this->hook->attach('module.extractor.pattern', $pattern, $extension, $this);
-        return $pattern;
+        $this->hook->attach('module.extractor.get', $extractor, $extension, $this);
+        return $extractor;
+    }
+
+    /**
+     * Returns an array of default extractors keyed by supported file extension
+     * @return array
+     */
+    protected function getDefault()
+    {
+        return array(
+            'json' => array($this, 'extractFromFileJson'),
+            'js' => array(static::PATTERN_JS),
+            'twig' => array(static::PATTERN_TWIG, static::PATTERN_JS),
+            'php' => array(static::PATTERN_PHP, static::PATTERN_JS, static::PATTERN_PHPDOC)
+        );
+    }
+
+    /**
+     * Extract strings from module.json
+     * @param string $file
+     * @return array
+     */
+    protected function extractFromFileJson($file)
+    {
+        $extracted = array();
+        if (basename($file) === 'module.json') {
+            $content = json_decode(file_get_contents($file), true);
+            if (!empty($content['name'])) {
+                $extracted[] = $content['name'];
+            }
+
+            if (!empty($content['description'])) {
+                $extracted[] = $content['description'];
+            }
+        }
+
+        return $extracted;
     }
 
     /**
@@ -78,10 +123,14 @@ class Extract extends Model
      */
     public function extractFromFile($file)
     {
-        $pattern = $this->getPattern(pathinfo($file, PATHINFO_EXTENSION));
+        $extractor = $this->get(pathinfo($file, PATHINFO_EXTENSION));
 
-        if (empty($pattern)) {
+        if (empty($extractor)) {
             return array();
+        }
+
+        if (is_callable($extractor)) {
+            return call_user_func_array($extractor, array($file));
         }
 
         $handle = fopen($file, 'r');
@@ -94,7 +143,7 @@ class Extract extends Model
 
         $extracted = array();
         while ($lines && $line = fgets($handle, self::MAX_COLS)) {
-            $extracted = array_merge($extracted, $this->extractFromString($line, $pattern));
+            $extracted = array_merge($extracted, $this->extractFromString($line, $extractor));
             $lines--;
         }
 
@@ -105,27 +154,28 @@ class Extract extends Model
     /**
      * Returns an array of extracted strings from a source string
      * @param string $string
-     * @param string|array $patterns
+     * @param string|array $regexp_patterns
      * @return array
      */
-    public function extractFromString($string, $patterns)
+    public function extractFromString($string, $regexp_patterns)
     {
         $result = null;
-        $this->hook->attach('module.extractor.extract', $string, $patterns, $result, $this);
+        $this->hook->attach('module.extractor.extract', $string, $regexp_patterns, $result, $this);
 
         if (isset($result)) {
             return $result;
         }
 
-        foreach ((array) $patterns as $pattern) {
+        $extracted = array();
+        foreach ((array) $regexp_patterns as $pattern) {
             $matches = array();
             preg_match_all($pattern, $string, $matches);
             if (!empty($matches[2])) {
-                return $this->clean($matches[2]);
+                $extracted = array_merge($extracted, $this->clean($matches[2]));
             }
         }
 
-        return array();
+        return $extracted;
     }
 
     /**
@@ -185,7 +235,7 @@ class Extract extends Model
      */
     public function isSupportedFile($file)
     {
-        return is_file($file) && in_array(pathinfo($file, PATHINFO_EXTENSION), array_keys($this->getPattern()));
+        return is_file($file) && in_array(pathinfo($file, PATHINFO_EXTENSION), array_keys($this->get()));
     }
 
     /**
@@ -213,8 +263,14 @@ class Extract extends Model
      */
     protected function scanRecursive($directory, &$results = array())
     {
-        if (strpos($directory, 'override') !== false) {
+        $directory = str_replace('\\', '/', $directory);
+
+        if (strpos($directory, '/override/') !== false) {
             return $results; // Exclude "override" directories
+        }
+
+        if (strpos($directory, '/vendor/') !== false) {
+            return $results; // Exclude "vendor" directories
         }
 
         foreach (scandir($directory) as $file) {
