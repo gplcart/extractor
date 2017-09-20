@@ -28,9 +28,9 @@ class Extractor extends Model
     const MAX_LINES = 5000;
 
     /**
-     * Pattern to extract strings from JS function GplCart.text()
+     * Pattern to extract strings from JS function Gplcart.text()
      */
-    const PATTERN_JS = '/GplCart.text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s';
+    const PATTERN_JS = '/Gplcart.text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s';
 
     /**
      * Pattern to extract strings from TWIG function {{ text() }}
