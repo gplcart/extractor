@@ -9,6 +9,7 @@
 
 namespace gplcart\modules\extractor\models;
 
+use DirectoryIterator;
 use gplcart\core\Model;
 
 /**
@@ -263,7 +264,7 @@ class Extractor extends Model
      */
     protected function scanRecursive($directory, &$results = array())
     {
-        $directory = str_replace('\\', '/', $directory);
+        $directory = gplcart_path_normalize($directory);
 
         if (strpos($directory, '/override/') !== false) {
             return $results; // Exclude "override" directories
@@ -273,13 +274,13 @@ class Extractor extends Model
             return $results; // Exclude "vendor" directories
         }
 
-        foreach (scandir($directory) as $file) {
-            $path = "$directory/$file";
-            if (!is_dir($path)) {
-                $results[] = $path;
-            } else if ($file != "." && $file != "..") {
-                $this->scanRecursive($path, $results);
-                $results[] = $path;
+        foreach (new DirectoryIterator($directory) as $file) {
+            $realpath = $file->getRealPath();
+            if ($file->isDir() && !$file->isDot()) {
+                $this->scanRecursive($realpath, $results);
+                $results[] = $realpath;
+            } else if ($file->isFile()) {
+                $results[] = $realpath;
             }
         }
 

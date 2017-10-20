@@ -59,7 +59,7 @@ class Extractor extends BackendController
     protected function getCoreTranslationsExtractor()
     {
         $files = array();
-        foreach (array_keys($this->language->getAvailable()) as $langcode) {
+        foreach (array_keys($this->language->getList()) as $langcode) {
             $file = $this->language->getFile($langcode);
             if (is_file($file)) {
                 $files[basename($file)] = $file;
@@ -171,7 +171,7 @@ class Extractor extends BackendController
      */
     protected function getFileExtractor()
     {
-        $file = gplcart_file_unique(GC_PRIVATE_TEMP_DIR . '/extracted-translations.csv');
+        $file = gplcart_file_private_temp('extracted-translations.csv', true);
         file_put_contents($file, '');
         return $file;
     }
