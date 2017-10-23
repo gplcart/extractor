@@ -246,8 +246,8 @@ class Extractor extends Model
     public function getScannedDirectories()
     {
         $directories = array(
-            GC_CORE_DIR,
-            GC_CONFIG_DEFAULT_DIR,
+            GC_DIR_CORE,
+            GC_DIR_CONFIG,
             $this->config->getModuleDirectory('frontend'),
             $this->config->getModuleDirectory('backend')
         );
