@@ -10,13 +10,26 @@
 namespace gplcart\modules\extractor\models;
 
 use DirectoryIterator;
-use gplcart\core\Model;
+use gplcart\core\Config,
+    gplcart\core\Hook;
 
 /**
  * Methods to extract translatable strings from various source files
  */
-class Extractor extends Model
+class Extractor
 {
+
+    /**
+     * Hook class instance
+     * @var \gplcart\core\Hook $hook
+     */
+    protected $hook;
+
+    /**
+     * Config class instance
+     * @var \gplcart\core\Config $config
+     */
+    protected $config;
 
     /**
      * Max parsing width in columns
@@ -49,11 +62,13 @@ class Extractor extends Model
     const PATTERN_PHP = '/->text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s';
 
     /**
-     * Constructor
+     * @param Hook $hook
+     * @param Config $config
      */
-    public function __construct()
+    public function __construct(Hook $hook, Config $config)
     {
-        parent::__construct();
+        $this->hook = $hook;
+        $this->config = $config;
     }
 
     /**
