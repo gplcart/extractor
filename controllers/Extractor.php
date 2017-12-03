@@ -119,7 +119,12 @@ class Extractor extends BackendController
      */
     protected function setBreadcrumbEditExtractor()
     {
-        $this->setBreadcrumbHome();
+        $breadcrumb = array(
+            'url' => $this->url('admin'),
+            'text' => $this->text('Dashboard')
+        );
+
+        $this->setBreadcrumb($breadcrumb);
     }
 
     /**
