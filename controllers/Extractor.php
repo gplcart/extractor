@@ -76,7 +76,7 @@ class Extractor extends BackendController
     protected function getScopesExtractor()
     {
         $scopes = array();
-        foreach ($this->config->getModules() as $module) {
+        foreach ($this->module->getList() as $module) {
             $scopes[$module['module_id']] = array(
                 'name' => $module['name'],
                 'directories' => array($module['directory'])

@@ -10,8 +10,8 @@
 namespace gplcart\modules\extractor\models;
 
 use DirectoryIterator;
-use gplcart\core\Config,
-    gplcart\core\Hook;
+use gplcart\core\Hook,
+    gplcart\core\Module;
 
 /**
  * Methods to extract translatable strings from various source files
@@ -26,10 +26,10 @@ class Extractor
     protected $hook;
 
     /**
-     * Config class instance
-     * @var \gplcart\core\Config $config
+     * Module class instance
+     * @var \gplcart\core\Module $module
      */
-    protected $config;
+    protected $module;
 
     /**
      * Max parsing width in columns
@@ -63,12 +63,12 @@ class Extractor
 
     /**
      * @param Hook $hook
-     * @param Config $config
+     * @param Module $module
      */
-    public function __construct(Hook $hook, Config $config)
+    public function __construct(Hook $hook, Module $module)
     {
         $this->hook = $hook;
-        $this->config = $config;
+        $this->module = $module;
     }
 
     /**
@@ -263,8 +263,8 @@ class Extractor
         $directories = array(
             GC_DIR_CORE,
             GC_DIR_CONFIG,
-            $this->config->getModuleDirectory('frontend'),
-            $this->config->getModuleDirectory('backend')
+            $this->module->getDirectory('frontend'),
+            $this->module->getDirectory('backend')
         );
 
         $this->hook->attach('module.extractor.directories', $directories, $this);

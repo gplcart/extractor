@@ -9,22 +9,11 @@
 
 namespace gplcart\modules\extractor;
 
-use gplcart\core\Module,
-    gplcart\core\Config;
-
 /**
  * Main class for Extractor module
  */
-class Extractor extends Module
+class Extractor
 {
-
-    /**
-     * @param Config $config
-     */
-    public function __construct(Config $config)
-    {
-        parent::__construct($config);
-    }
 
     /**
      * Implements hook "route.list"
