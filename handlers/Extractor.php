@@ -9,7 +9,7 @@
 
 namespace gplcart\modules\extractor\handlers;
 
-use gplcart\core\models\Language as LanguageModel;
+use gplcart\core\models\Translation as TranslationModel;
 use gplcart\modules\extractor\models\Extractor as ExtractorModel;
 
 /**
@@ -19,26 +19,25 @@ class Extractor
 {
 
     /**
+     * Translation UI model class instance
+     * @var \gplcart\core\models\Translation $translation
+     */
+    protected $translation;
+
+    /**
      * Extractor model instance
      * @var \gplcart\modules\extractor\models\Extractor $extractor
      */
     protected $extractor;
 
     /**
-     * Language model class instance
-     * @var \gplcart\core\models\Language $language
-     */
-    protected $language;
-
-    /**
-     * @param LanguageModel $language
      * @param ExtractorModel $extractor
+     * @param TranslationModel $translation
      */
-    public function __construct(LanguageModel $language,
-            ExtractorModel $extractor)
+    public function __construct(ExtractorModel $extractor, TranslationModel $translation)
     {
-        $this->language = $language;
         $this->extractor = $extractor;
+        $this->translation = $translation;
     }
 
     /**
@@ -85,7 +84,7 @@ class Extractor
     {
         // Check core translation for dublicates
         if (!empty($job['data']['check_file'])) {
-            $translations = $this->language->loadTranslation($job['data']['check_file']);
+            $translations = $this->translation->loadTranslation($job['data']['check_file']);
             if (isset($translations[$string])) {
                 return true;
             }

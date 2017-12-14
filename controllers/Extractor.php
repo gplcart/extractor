@@ -60,7 +60,7 @@ class Extractor extends BackendController
     {
         $files = array();
         foreach (array_keys($this->language->getList()) as $langcode) {
-            $file = $this->language->getFile($langcode);
+            $file = $this->translation->getFile($langcode);
             if (is_file($file)) {
                 $files[basename($file)] = $file;
             }
