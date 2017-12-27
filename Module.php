@@ -12,7 +12,7 @@ namespace gplcart\modules\extractor;
 /**
  * Main class for Extractor module
  */
-class Extractor
+class Module
 {
 
     /**
