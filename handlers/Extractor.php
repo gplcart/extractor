@@ -63,7 +63,7 @@ class Extractor
         foreach ($files as $file) {
             foreach ($this->extractor->extractFromFile($file) as $string) {
                 if (!$this->exists($string, $job)) {
-                    $job['inserted'] ++;
+                    $job['inserted']++;
                     gplcart_file_csv($job['data']['file'], array($string, ''));
                 }
             }
