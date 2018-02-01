@@ -52,14 +52,24 @@ class Extractor
     const PATTERN_TWIG = '/text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s';
 
     /**
-     * Pattern to extract strings using inline @text annotation
+     * Pattern to extract strings using inline @text annotation that goes before the translatable staring
      */
-    const PATTERN_PHPDOC = '/\/\*(?:\*|\s)+@text(?:\*|\s)+\*\/\s*([\'"])(.+?)\1\s*/';
+    const PATTERN_ANNOTATION_BEFORE = '/\/\*(?:\*|\s*)@text(?:\*|\s*)\*\/\s*([\'"])(.+?)\1\s*/';
+
+    /**
+     * Pattern to extract strings using inline // @text annotation that goes after the translatable staring
+     */
+    const PATTERN_ANNOTATION_AFTER = '/([\'"])((?:(?!\1).)+)\1(?:\s*)(?:;*|,*)\s*\/\/\s*@text\s*$/';
 
     /**
      * Pattern to extract strings from Language::text() method
      */
-    const PATTERN_PHP = '/->text\s*\(\s*([\'"])(.+?)\1\s*([\),])/s';
+    const PATTERN_PHP_METHOD = '/->text\(\s*([\'"])(.+?)\1\s*([\),])/s';
+
+    /**
+     * Pattern to extract strings from gplcart_text() function
+     */
+    const PATTERN_PHP_FUNCTION = '/gplcart_text\(\s*([\'"])(.+?)\1\s*([\),])/s';
 
     /**
      * @param Hook $hook
@@ -104,9 +114,19 @@ class Extractor
     {
         return array(
             'json' => array($this, 'extractFromFileJson'),
-            'js' => array(static::PATTERN_JS),
-            'twig' => array(static::PATTERN_TWIG, static::PATTERN_JS),
-            'php' => array(static::PATTERN_PHP, static::PATTERN_JS, static::PATTERN_PHPDOC)
+            'js' => array(
+                static::PATTERN_JS),
+            'twig' => array(
+                static::PATTERN_TWIG,
+                static::PATTERN_JS
+            ),
+            'php' => array(
+                static::PATTERN_PHP_METHOD,
+                static::PATTERN_PHP_FUNCTION,
+                static::PATTERN_JS,
+                static::PATTERN_ANNOTATION_AFTER,
+                static::PATTERN_ANNOTATION_BEFORE
+            )
         );
     }
 
@@ -232,7 +252,7 @@ class Extractor
             $scanned = array_merge($scanned, $this->scanRecursive($directory));
         }
 
-        $files = array_filter($scanned, function($file) {
+        $files = array_filter($scanned, function ($file) {
             return $this->isSupportedFile($file);
         });
 
