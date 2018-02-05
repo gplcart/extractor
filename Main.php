@@ -23,7 +23,9 @@ class Main
     {
         $routes['admin/tool/extract'] = array(
             'access' => 'module_extractor_edit',
-            'menu' => array('admin' => /* @text */'Extractor'),
+            'menu' => array(
+                'admin' => 'Extractor' // @text
+            ),
             'handlers' => array(
                 'controller' => array('gplcart\\modules\\extractor\\controllers\\Extractor', 'editExtractor')
             )
@@ -36,7 +38,7 @@ class Main
      */
     public function hookUserRolePermissions(array &$permissions)
     {
-        $permissions['module_extractor_edit'] = /* @text */'Extractor: edit';
+        $permissions['module_extractor_edit'] = 'Extractor: edit'; // @text
     }
 
     /**
