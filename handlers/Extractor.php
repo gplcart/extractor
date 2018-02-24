@@ -9,7 +9,7 @@
 
 namespace gplcart\modules\extractor\handlers;
 
-use gplcart\core\models\Translation as TranslationModel;
+use gplcart\core\models\Translation;
 use gplcart\modules\extractor\models\Extractor as ExtractorModel;
 
 /**
@@ -32,9 +32,9 @@ class Extractor
 
     /**
      * @param ExtractorModel $extractor
-     * @param TranslationModel $translation
+     * @param Translation $translation
      */
-    public function __construct(ExtractorModel $extractor, TranslationModel $translation)
+    public function __construct(ExtractorModel $extractor, Translation $translation)
     {
         $this->extractor = $extractor;
         $this->translation = $translation;

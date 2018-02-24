@@ -9,13 +9,13 @@
 
 namespace gplcart\modules\extractor\controllers;
 
+use gplcart\core\controllers\backend\Controller;
 use gplcart\modules\extractor\models\Extractor as ExtractorModel;
-use gplcart\core\controllers\backend\Controller as BackendController;
 
 /**
  * Handles incoming requests and outputs data related to string extraction
  */
-class Extractor extends BackendController
+class Extractor extends Controller
 {
 
     /**
@@ -40,7 +40,6 @@ class Extractor extends BackendController
     public function editExtractor()
     {
         $this->downloadExtractor();
-
         $this->setTitleEditExtractor();
         $this->setBreadcrumbEditExtractor();
 
@@ -59,6 +58,7 @@ class Extractor extends BackendController
     protected function getCoreTranslationsExtractor()
     {
         $files = array();
+
         foreach (array_keys($this->language->getList()) as $langcode) {
             $file = $this->translation->getFile($langcode);
             if (is_file($file)) {
@@ -76,6 +76,7 @@ class Extractor extends BackendController
     protected function getScopesExtractor()
     {
         $scopes = array();
+
         foreach ($this->module->getList() as $module) {
             $scopes[$module['module_id']] = array(
                 'name' => $module['name'],

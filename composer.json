@@ -7,18 +7,7 @@
     "i18n",
     "gplcart-module"
   ],
-  "homepage": "https://github.com/gplcart/extractor",
   "license": "GPL-3.0-or-later",
-  "authors": [
-    {
-      "name": "Iurii Makukh",
-      "email": "gplcart.software@gmail.com",
-      "role": "lead"
-    }
-  ],
-  "support": {
-    "issues": "https://github.com/gplcart/extractor/issues"
-  },
   "require": {
     "gplcart/composer-module-installer": "*"
   },

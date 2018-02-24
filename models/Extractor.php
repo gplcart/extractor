@@ -10,8 +10,8 @@
 namespace gplcart\modules\extractor\models;
 
 use DirectoryIterator;
-use gplcart\core\Hook,
-    gplcart\core\Module;
+use gplcart\core\Hook;
+use gplcart\core\Module;
 
 /**
  * Methods to extract translatable strings from various source files
